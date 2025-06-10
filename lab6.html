@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Калькулятор надійності та збитків</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f5f9;
+      padding: 20px;
+      color: #1e293b;
+    }
+    h1, h2 {
+      color: #0f172a;
+    }
+    .section {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      margin-bottom: 30px;
+    }
+    .input-group {
+      margin-bottom: 10px;
+    }
+    .input-group label {
+      display: block;
+      margin-bottom: 4px;
+    }
+    .input-group input {
+      padding: 8px;
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+    }
+    button {
+      padding: 10px 16px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .result {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Калькулятор надійності та збитків електропостачання</h1>
+
+  <div class="section">
+    <h2>1. Розрахунок показників надійності</h2>
+    <div class="input-group"><label>ПЛ 110 кВ, Ω: <input id="PL110KVOmegaVal" type="number"></label></div>
+    <div class="input-group"><label>Т 110 кВ, Ω: <input id="T110KVOmegaVal" type="number"></label></div>
+    <div class="input-group"><label>Вв. 110 кВ, Ω: <input id="V110KVOmegaVal" type="number"></label></div>
+    <div class="input-group"><label>Вв. 10 кВ, Ω: <input id="V10KVOmegaVal" type="number"></label></div>
+    <div class="input-group"><label>Шини, Ω: <input id="tiresOmegaVal" type="number"></label></div>
+    <div class="input-group"><label>tвi ПЛ: <input id="PL110KVTviVal" type="number"></label></div>
+    <div class="input-group"><label>tвi Т: <input id="T110KVTviVal" type="number"></label></div>
+    <div class="input-group"><label>tвi Вв. 110: <input id="V110KVTviVal" type="number"></label></div>
+    <div class="input-group"><label>tвi Вв. 10: <input id="V10KVTviVal" type="number"></label></div>
+    <div class="input-group"><label>tвi Шини: <input id="tiresTviVal" type="number"></label></div>
+    <div class="input-group"><label>kп макс.: <input id="PlannedKMaxVal" type="number"></label></div>
+    <button id="button__first">Розрахувати надійність</button>
+    <div class="result">
+      Ω_сум: <span id="OmegaSumVal"></span><br>
+      tв.ос: <span id="tvosVal"></span><br>
+      kа.ос (x10⁴): <span id="kaosVal"></span><br>
+      kп.ос (x10⁴): <span id="kposVal"></span><br>
+      DК_ос (x10⁴): <span id="DKOmega"></span><br>
+      DС_ос: <span id="DSOmega"></span>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>2. Розрахунок збитків від перерв</h2>
+    <div class="input-group"><label>Zпер.А: <input id="ZperAVal" type="number"></label></div>
+    <div class="input-group"><label>Zпер.П: <input id="ZperPVal" type="number"></label></div>
+    <div class="input-group"><label>Ω: <input id="OmegaVal" type="number"></label></div>
+    <div class="input-group"><label>tв: <input id="tvVal" type="number"></label></div>
+    <div class="input-group"><label>kп: <input id="kpVal" type="number"></label></div>
+    <div class="input-group"><label>Pм: <input id="PmVal" type="number"></label></div>
+    <div class="input-group"><label>Tм: <input id="TmVal" type="number"></label></div>
+    <button id="button__second">Розрахувати збитки</button>
+    <div class="result">
+      Wнед.А: <span id="WnedaVal"></span><br>
+      Wнед.П: <span id="WnedpVal"></span><br>
+      Zпер: <span id="ZperVal"></span>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('button__first').addEventListener('click', function () {
+      const getVal = id => parseFloat(document.getElementById(id).value) || 0;
+
+      const PL = getVal('PL110KVOmegaVal');
+      const T = getVal('T110KVOmegaVal');
+      const V110 = getVal('V110KVOmegaVal');
+      const V10 = getVal('V10KVOmegaVal');
+      const tires = getVal('tiresOmegaVal');
+
+      const tviPL = getVal('PL110KVTviVal');
+      const tviT = getVal('T110KVTviVal');
+      const tviV110 = getVal('V110KVTviVal');
+      const tviV10 = getVal('V10KVTviVal');
+      const tviTires = getVal('tiresTviVal');
+
+      const kMax = getVal('PlannedKMaxVal');
+
+      const OmegaSum = PL * 10 + T + V110 + V10 + 6 * tires;
+      const tvos = (PL * tviPL + T * tviT + V110 * tviV110 + V10 * tviV10 + 6 * tires * tviTires) / OmegaSum;
+      const kaos = (OmegaSum * tvos) / 8760;
+      const kpos = 1.2 * (kMax / 8760);
+      const DKOmega = 2 * OmegaSum * (kaos + kpos);
+      const DSOmega = DKOmega + V10;
+
+      document.getElementById('OmegaSumVal').textContent = OmegaSum.toFixed(4);
+      document.getElementById('tvosVal').textContent = tvos.toFixed(2);
+      document.getElementById('kaosVal').textContent = (kaos * 1e4).toFixed(2);
+      document.getElementById('kposVal').textContent = (kpos * 1e4).toFixed(2);
+      document.getElementById('DKOmega').textContent = (DKOmega * 1e4).toFixed(2);
+      document.getElementById('DSOmega').textContent = DSOmega.toFixed(4);
+    });
+
+    document.getElementById('button__second').addEventListener('click', function () {
+      const getVal = id => parseFloat(document.getElementById(id).value) || 0;
+
+      const ZperA = getVal('ZperAVal');
+      const ZperP = getVal('ZperPVal');
+      const Omega = getVal('OmegaVal');
+      const tv = getVal('tvVal');
+      const kp = getVal('kpVal');
+      const Pm = getVal('PmVal');
+      const Tm = getVal('TmVal');
+
+      const Wneda = Omega * tv * Pm * Tm;
+      const Wnedp = kp * Pm * Tm;
+      const Zper = ZperA * Wneda + ZperP * Wnedp;
+
+      document.getElementById('WnedaVal').textContent = Wneda.toFixed(2);
+      document.getElementById('WnedpVal').textContent = Wnedp.toFixed(2);
+      document.getElementById('ZperVal').textContent = Zper.toFixed(2);
+    });
+  </script>
+</body>
+</html>
